@@ -1,6 +1,6 @@
 import os
 import re
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -10,7 +10,6 @@ EMAIL_REGEX = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
 
 @app.route('/', methods=['GET'])
 def index():
-    # Production-ready data layer injection via Jinja2
     skills_data = {
         "Languages": [
             {"name": "Python", "level": 90, "icon": "fab fa-python"},
@@ -74,6 +73,14 @@ def index():
 
     return render_template('index.html', skills=skills_data, projects=projects_data)
 
+# SECURE LOCAL IMAGE STREAM ROUTE
+@app.route('/local-profile-image')
+def serve_local_image():
+    # Direct absolute targeting vector pointing directly to your local file path
+    directory = r"C:\Users\swapn\Downloads"
+    filename = "WhatsApp Image 2026-05-31 at 3.48.23 PM.jpeg"
+    return send_from_directory(directory, filename)
+
 @app.route('/api/contact', methods=['POST'])
 def contact_api():
     try:
@@ -83,7 +90,6 @@ def contact_api():
         subject = data.get('subject', '').strip()
         message = data.get('message', '').strip()
         
-        # Validation checks
         if not all([name, email, subject, message]):
             return jsonify({"status": "error", "message": "All fields are strictly required."}), 400
             
@@ -93,7 +99,6 @@ def contact_api():
         if len(message) < 10:
             return jsonify({"status": "error", "message": "Message content must exceed 10 characters."}), 400
 
-        # Production processing logic (e.g. database commit or SMTP transfer goes here)
         return jsonify({"status": "success", "message": f"Thank you, {name}. Your transmission has been securely logged."}), 200
         
     except Exception as e:
